@@ -1,0 +1,235 @@
+DIAGNOSTICS FOR RESIDUALS
+
+## Example 18 Toluca Co., ALSM CH01TA01.
+> vars <- c("lot.size", "work.hours")
+> data <- read.table("CH01TA01.txt", col.names = vars)
+> plot(data[,1], data[,2], main="Work Hours vs. Lot Size", xlab="Lot Size", ylab="Work Hours")
+> out <- lm(data[,2] ~ data[,1])
+> abline(out)
+> summary(out)
+> residuals <- data[,2] - out$fit
+> head(residuals)
+> res <- out$residual
+> head(res)
+> windows()
+> plot(residuals ~ data[,1], xlab="Lot Size",
+> main="Residuals vs. Lot Size")
+> windows()
+> std.res <- residuals/sd(residuals)
+> plot(std.res ~ data[,1], main="Standardized Residuals vs. Observed Lot Sizes", xlab="Lot Size")
+> run <- seq(1,nrow(data), 1)
+> data <- cbind(run, data)
+> windows()
+> plot(residuals ~ data$run, xlab="Run #", main = "Residuals vs. Run #")
+> lines(data$run, residuals)
+> windows()
+> boxplot(residuals, horizontal=TRUE, outline=TRUE)
+> windows()
+> qqnorm(residuals)
+> qqline(residuals)
+> shapiro.test(residuals)
+> library(nortest)
+> ad.test(residuals)
+
+####################
+
+> windows()
+> par(mfrow=c(2,3))
+> plot(data[,1], data[,2], main="Work Hours vs. Lot Size", xlab="Lot Size", ylab="Work Hours")
+> plot(residuals ~ data[,1], xlab="Lot Size",
+> main="Residuals vs. Lot Size")
+> plot(std.res ~ data[,1], main="Standardized Residuals vs. Observed Lot Sizes", xlab="Lot Size")
+> plot(residuals ~ data$run, xlab="Run #", main = "Residuals vs. Run #")
+> lines(data$run, residuals)
+> boxplot(residuals, horizontal=TRUE, outline=TRUE, main ="Boxplot of Residuals")
+> qqnorm(residuals)
+> qqline(residuals)
+
+##  Example 19 Maps and Ridership Increase, ALSM CH03TA01.
+> vars <- c("RidershipIncr", "MapsDistr")
+> data <- read.table("CH03TA01.txt", header=FALSE, col.names = vars)
+> par(mfrow=c(1,2))
+> plot(data[,1] ~ data[,2], main="Increase in Ridership (in 1000s) vs. Maps Distributed (in 1000s)", xlab="Maps Distributed (in 1000s)", ylab="Increase in Ridership (in 1000s")
+> out <- lm(data)
+> summary(out) ######Note the r^2 value is .8751
+> abline(out)
+> res <- out$residual
+> sqrt((sd(res)^2)*7/6)
+> plot(res ~ data[,2], main="Residuals vs. Maps Distributed (1000s)", xlab = "Maps Distributed (in 1000s)", ylab="Residuals")
+> abline(a=0, b=0) ####Slope a and intercept b set to 0
+
+## Example 20 Brain and Body Weight for 65 Animals: BrainandBodyWeight.
+> data = read.csv("BrainandBodyWeight.csv", header = TRUE)
+> plot(data$brain ~ data$body)
+> text(data$body, data$brain, labels=data$Animal, cex=0, pos=4)
+> windows()
+> data.mod <- data[1:60,]
+> plot(data.mod$brain ~ data.mod$body)
+> text(data.mod$body, data.mod$brain, labels=data.mod$Animal, cex=0, pos=4)
+> out <- lm(data.mod$brain ~ data.mod$body)
+> summary(out)
+> abline(out)
+> residuals <- data.mod$brain - out$fit
+> windows()
+> plot(residuals ~ data.mod$body)
+> animals <- data.mod[-50,]
+> windows()
+> out <- lm(animals$brain ~ animals$body)
+> summary(out)
+> plot(animals$brain ~ animals$body)
+> abline(out)
+> residuals <- animals$brain - out$fit
+> windows()
+> plot(residuals ~ animals$body)
+> abline(a=0, b=0)
+> text(animals$body, residuals, labels=animals$Animal, cex=0, pos=1)
+
+##  Example 21 Hang Times of Little Parachutes.
+> library(car)
+> h <- c(5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20)
+> t <- c(3.20, 3.21, 3.19, 3.25, 3.26, 6.05, 6.79, 7.06, 7.11, 7.31, 9.03, 10.12, 9.55, 10.33, 10.97, 13.01, 14.98, 14.55, 15.28, 17.33)
+> plot(h, t, main="Hang Times (sec) of Little Parachutes vs. Height (m)", xlab="Drop Height (m)", ylab="Hang Time (sec)")
+> leveneTest(t ~ h)
+> hh <- c("a", "a", "a", "a", "a", "b", "b", "b", "b", "b", "c", "c", "c", "c", "c", "d", "d", "d", "d", "d")
+> leveneTest(t ~ hh) # nonparametric test. normality not needed
+########### Not as powerful as Bartlett if normality is satisfied bartlett.test(t~hh) #parametric test, assumes normality.
+
+##  Example 22 Production time: ALSM CH03PR18. This data set contains production times in hours (14.28, 8.80, 12.49, ...) for 111 production runs along with their corresponding lot sizes (15, 9, 7, ...)
+> pt <- read.table("CH03PR18.txt")
+> names(pt) <- c("ProductionHrs", "LotSize")
+> head(pt)
+> plot(pt$ProductionHrs ~ pt$LotSize)
+> out<-lm(pt$ProductionHrs ~ pt$LotSize)
+> abline(out, col="blue")
+## Suppose we split the explanatory values into
+## three sets: < 10; [10, 15); >= 15. We want to
+## check to see if the variances of the residuals
+## are the same (or differ somehow) across the
+## categories. I'll demonstrate a couple ways to
+## accomplish this- first with a loop, then with
+## the cut() function.
+
+## Way 1......
+> i=1
+while(i <= nrow(pt)){
+ifelse(pt[i,2] <10, pt[i,3]<-"low", ifelse(pt[i,2] < 15,
+pt[i,3] <-"med", pt[i,3]<-"high"))
+i <- i+1
+}
+> names(pt) <- c("ProductionHrs", "LotSize", "LotSizeCode")
+> head(pt)
+> library(car)
+> leveneTest(out$residuals ~ factor(pt$LotSizeCode))
+> windows()
+> boxplot(out$residuals ~ pt$LotSizeCode)
+
+## Way 2......
+> Other <- cut(pt$LotSize, c(-Inf, 9.999, 14.999, Inf),
+> labels = c("L", "M", "H"))
+> asdf <- cbind(pt, Other)
+> leveneTest(out$residuals ~ asdf$Other)
+
+## Breusch-Pagan...
+## Square the residuals
+> sqres <- out$residuals^2
+> BPout <- lm(sqres ~ pt$LotSize)
+> summary(BPout)
+> windows()
+> plot(sqres ~ pt$LotSize)
+> abline(BPout)
+
+##  Example 23 New production. A business implements a new production system. Open the dataset \Production.csv".
+> data <- read.csv("Production.csv", header=TRUE)
+> head(data)
+> out <- lm(data$Sales ~ data$Production)
+> summary(out)
+> plot(data$Sales ~ data$Production)
+> abline(out)
+> residuals <- data$Sales - out$fit
+> windows()
+> par(mfrow=c(3,1))
+> plot(residuals ~ data$Production)
+> abline(a=0, b=0)
+> plot(data$Sales ~ data$Day)
+> plot(residuals ~ data$Day)
+> library(car)
+> durbinWatsonTest(out)
+
+LACK OF FIT TEST
+##  Example 24 Enter these data into R:
+> x <- c(1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 6, 6, 7, 7, 7, 10, 10, 10, 10)
+> y <- c(4, 6, 8, 12, 13, 12, 14, 15, 15.5, 15, 15.9, 16, 16.5, 15, 14.5, 11, 3, 4,4.5, 8)
+> plot(x,y)
+> model1 <- lm(y~x)
+> anova(model1)
+> library(alr3)
+> pureErrorAnova(model1)
+> abline(model1, lwd=2, col="blue")
+
+##  Change the response values and redo:
+> y <- c(2.8, 3.2, 5.5, 6.3, 6, 8.7, 8.9, 9, 9.3, 12.2, 11.6, 17.7, 18.1, 21.1, 21.8, 21, 29.5, 30, 30.5, 30.8)
+> windows()
+> plot(x,y)
+> model2 <- lm(y~x)
+> anova(model2)
+> pureErrorAnova(model2)
+> abline(model2, lwd=2, col="blue")
+
+TRANSFORMATIONS
+##  Example 25 Brain and body weight. Open BrainandBodyWeight.csv data.
+> animals <- read.csv("BrainandBodyWeight.csv", header=TRUE)
+> animals
+> animals <- animals[1:60,] ##Get rid of dinosaurs...
+> plot(animals$brain ~ animals$body)
+> animals <- animals[-50,] ## Get rid of humans...
+> plot(animals$brain ~ animals$body)
+> text(animals$body, animals$brain, labels=animals$Animal, cex=.7, pos=4)
+> out <- lm(animals$brain ~ animals$body)
+> summary(out)
+> animals$logbrain <- log(animals$brain)
+> animals$logbody <- log(animals$body)
+> logout <- lm(animals$logbrain ~ animals$logbody)
+> summary(logout)
+> windows()
+> plot(animals$logbrain ~ animals$logbody, main="Log of Brain Mass (g) vs. Log of Body Mass (kg)", xlab="Log of Body Mass (kg)", ylab="Log of Brain Mass (g)")
+> abline(logout, col="blue")
+> pureErrorAnova(logout)
+> windows()
+> plot(animals$logbody, logout$residual)
+> windows()
+> plot(animals$logbody, logout$residual)
+> hist(logout$residual)
+> shapiro.test(logout$residual)
+
+## Example 26 Trees
+> trees
+> attach(trees)
+> reg1 <- lm(Volume ~ Height + Girth)
+
+##### Here is our first model with two predictors!
+> plot(Girth, rstandard(reg1))
+> par(mfrow=c(2,1))
+> hist(reg1$resid)
+> qqnorm(reg1$resid)
+> qqline(reg1$resid)
+> library(moments) ###### For skewness function
+> skewness(reg1$resid)
+> library(MASS) ###### For Box Cox transformation
+> trans <- boxcox(Volume ~ Height + Girth)
+> trans
+> lambda <- trans$x
+> loglh <- trans$y
+> boxcox <- cbind(lambda, loglh)
+> boxcox[order(-loglh),] #Using log-likelihood to optimize lambda
+> reg2 <- lm (Volume^.3030303 ~ Height + Girth)
+> plot(reg2)
+> par(mfrow = c(2,1))
+> hist(reg2$resid)
+> qqnorm(reg2$resid)
+> qqline(reg2$resid)
+> skewness(reg2$resid)
+> windows()
+> par(mfrow=c(2,1))
+> plot(Girth, rstandard(reg1))
+> plot(Girth, rstandard(reg2))
+> summary(reg2)

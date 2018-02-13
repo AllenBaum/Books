@@ -1,0 +1,45 @@
+# First create a little data frame of 'x' and 'y':
+> xy
+    x   y
+1   1  23
+2   2  29
+3   3  49
+4   4  64
+5   4  74
+6   5  87
+7   6  96
+8   6  97
+9   7 109
+10  8 119
+11  9 149
+12  9 145
+13 10 154
+14 10 166
+
+# Then create 'z1' variable with cuts:
+> z1 <- cut(xy$x, c(-Inf, 4.999, Inf), labels = c("<5","5>="))
+
+# Bind 'xy' variable with 'z1' varible to create a new 'z2' variable:
+> z2 <- cbind(xy,z1)
+> z2
+    x   y  z1
+1   1  23  <5
+2   2  29  <5
+3   3  49  <5
+4   4  64  <5
+5   4  74  <5
+6   5  87 5>=
+7   6  96 5>=
+8   6  97 5>=
+9   7 109 5>=
+10  8 119 5>=
+11  9 149 5>=
+12  9 145 5>=
+13 10 154 5>=
+14 10 166 5>=
+
+less than 26 and 26 or greater
+(-Inf, 25.999, Inf)
+
+less than 120 and 120 or greater
+(-Inf, 119.999, Inf)
