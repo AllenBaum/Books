@@ -1,0 +1,29 @@
+
+age <- c(3, 6, 8, 4, 2, 11, 4, 7, 7, 9)
+price <- c(172, 140, 112, 160, 165, 80, 155, 103, 84, 78)
+b1 <- cor(age, price) * sd(price) / sd(age)
+b0 <- mean(price) - b1* mean(age)
+fits <- b1*age + b0
+residuals <- price - fits
+SSE <- sum(residuals^2)
+MSE <- SSE / (10-2)
+stdev.b1 <- sqrt(MSE/sum((age - mean(age))^2))
+stdev.b0 <- sqrt(MSE) * sqrt(1/10 + (mean(age) ^2)/ sum((age - mean(age))^2))
+b1left.end.pt <- b1 - qt(.995, 8)*stdev.b1
+b1right.end.pt <- b1 + qt(.995, 8)*stdev.b1
+
+##### CI for beta_1
+b1left.end.pt
+b1right.end.pt
+b0left.end.pt <- b0 - qt(.995, 8)*stdev.b0
+b0right.end.pt <- b0 + qt(.995, 8)*stdev.b0
+
+##### CI for beta_0
+b0left.end.pt
+b0right.end.pt
+
+data <- data.frame(price, age)
+attach(data)
+out <- lm(data)
+nd = data.frame(age=c(4, 5, 6, 7, 8))
+predict(out, nd, interval="confidence", level=.99)
